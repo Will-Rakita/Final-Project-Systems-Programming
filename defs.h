@@ -5,12 +5,6 @@
 #include <semaphore.h>
 #include <pthread.h>
 
-/*
-    You are free to rename all of the types and functions defined here.
-
-    The ghost ID must remain the same for the validator to work correctly.
-*/
-
 #define MAX_ROOM_NAME 64
 #define MAX_HUNTER_NAME 64
 #define MAX_ROOMS 24
@@ -20,7 +14,7 @@
 #define HUNTER_FEAR_MAX 15
 #define DEFAULT_GHOST_ID 68057
 
-typedef unsigned char EvidenceByte; // Just giving a helpful name to unsigned char for evidence bitmasks
+typedef unsigned char EvidenceByte;
 
 enum LogReason {
     LR_EVIDENCE = 0,
@@ -66,31 +60,124 @@ enum GhostType {
 };
 
 struct CaseFile {
-    EvidenceByte collected; // Union of all of the evidence bits collected between all hunters
-    bool         solved;    // True when >=3 unique bits set
-    sem_t        mutex;     // Used for synchronizing both fields when multithreading
+    EvidenceByte collected;
+    bool solved;
+    sem_t mutex;
 };
 
-// Implement here based on the requirements, should all be allocated to the House structure
+struct RoomNode {
+    struct Room* room;
+    struct RoomNode* next;
+};
+
+struct RoomStack {
+    struct RoomNode* head;
+};
+
 struct Room {
+    char name[MAX_ROOM_NAME];
+    struct Room* connections[MAX_CONNECTIONS];
+    int connection_count;
+    struct Hunter* hunters[MAX_ROOM_OCCUPANCY];
+    int hunter_count;
+    struct Ghost* ghost;
+    EvidenceByte evidence;
+    bool is_exit;
+    sem_t sem;
 };
 
-// Implement here based on the requirements, should be allocated to the House structure
+struct Hunter {
+    char name[MAX_HUNTER_NAME];
+    int id;
+    struct Room* current_room;
+    struct House* house;
+    struct CaseFile* case_file;
+    enum EvidenceType device;
+    struct RoomStack path;
+    int boredom;
+    int fear;
+    bool return_to_van;
+    bool is_running;
+    enum LogReason exit_reason;
+};
+
 struct Ghost {
-
+    int id;
+    enum GhostType type;
+    struct Room* current_room;
+    int boredom;
+    bool is_running;
 };
 
-// Can be either stack or heap allocated
 struct House {
-    struct Room* starting_room; // Needed by house_populate_rooms, but can be adjusted to suit your needs.
+    struct Room rooms[MAX_ROOMS];
+    int room_count;
+    struct Hunter** hunters;
+    int hunter_count;
+    int hunter_capacity;
+    struct CaseFile case_file;
+    struct Ghost* ghost;
+    struct Room* starting_room;
 };
 
-/* The provided `house_populate_rooms()` function requires the following functions.
-   You are free to rename them and change their parameters and modify house_populate_rooms()
-   as needed as long as the house has the correct rooms and connections after calling it.
-*/
-
+// Room functions
 void room_init(struct Room* room, const char* name, bool is_exit);
-void rooms_connect(struct Room* a, struct Room* b); // Bidirectional connection
+void rooms_connect(struct Room* a, struct Room* b);
+bool room_add_hunter(struct Room* room, struct Hunter* hunter);
+void room_remove_hunter(struct Room* room, struct Hunter* hunter);
+void room_set_ghost(struct Room* room, struct Ghost* ghost);
+void room_remove_ghost(struct Room* room);
+void room_add_evidence(struct Room* room, enum EvidenceType evidence);
+bool room_remove_evidence(struct Room* room, enum EvidenceType evidence);
+bool room_has_evidence(struct Room* room, enum EvidenceType evidence);
+bool room_move_entity(struct Room* from, struct Room* to, void* entity);
+struct Room* room_get_random_connection(struct Room* room);
+void room_cleanup(struct Room* room);
 
-#endif // DEFS_H
+// Evidence functions
+EvidenceByte evidence_add(EvidenceByte mask, enum EvidenceType evidence);
+EvidenceByte evidence_remove(EvidenceByte mask, enum EvidenceType evidence);
+bool evidence_contains(EvidenceByte mask, enum EvidenceType evidence);
+int evidence_count_unique(EvidenceByte mask);
+bool evidence_has_three_unique(EvidenceByte mask);
+enum EvidenceType evidence_get_random_type();
+void casefile_init(struct CaseFile* case_file);
+void casefile_add_evidence(struct CaseFile* case_file, enum EvidenceType evidence);
+bool casefile_is_solved(struct CaseFile* case_file);
+EvidenceByte casefile_get_evidence(struct CaseFile* case_file);
+void casefile_cleanup(struct CaseFile* case_file);
+
+// RoomStack functions
+void roomstack_init(struct RoomStack* stack);
+void roomstack_push(struct RoomStack* stack, struct Room* room);
+struct Room* roomstack_pop(struct RoomStack* stack);
+void roomstack_clear(struct RoomStack* stack);
+bool roomstack_is_empty(struct RoomStack* stack);
+
+// Hunter functions
+struct Hunter* hunter_init(const char* name, int id, struct House* house);
+void hunter_cleanup(struct Hunter* hunter);
+void hunter_update_stats(struct Hunter* hunter);
+bool hunter_check_exit_conditions(struct Hunter* hunter);
+void hunter_van_check(struct Hunter* hunter);
+void hunter_gather_evidence(struct Hunter* hunter);
+void hunter_move(struct Hunter* hunter);
+void hunter_take_turn(struct Hunter* hunter);
+void* hunter_thread(void* arg);
+
+// Ghost functions
+struct Ghost* ghost_init(struct House* house);
+void ghost_cleanup(struct Ghost* ghost);
+void ghost_update_stats(struct Ghost* ghost);
+bool ghost_check_exit_condition(struct Ghost* ghost);
+void ghost_take_action(struct Ghost* ghost);
+void ghost_take_turn(struct Ghost* ghost);
+void* ghost_thread(void* arg);
+EvidenceByte ghost_get_evidence_requirements(struct Ghost* ghost);
+
+// House functions
+struct House* house_init();
+void house_cleanup(struct House* house);
+void hunter_collection_append(struct House* house, struct Hunter* hunter);
+
+#endif
