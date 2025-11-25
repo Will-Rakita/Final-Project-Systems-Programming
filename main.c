@@ -24,11 +24,13 @@ int main() {
     printf("House populated with %d rooms\n", house->room_count);
     
     // 3. Initialize the ghost data
-    if (ghost_init(house) == NULL) {
+    house->ghost = ghost_init(house);  // ✅ Assign the returned ghost to house->ghost
+    if (house->ghost == NULL) {
         fprintf(stderr, "Failed to initialize ghost\n");
         house_cleanup(house);
         return EXIT_FAILURE;
-    }
+    }   
+    
     
     // 4. Initialize hunters based on user input
     printf("\n--- Hunter Registration ---\n");
@@ -46,11 +48,13 @@ int main() {
         }
         
         printf("Hunter ID: ");
-        if (scanf("%d", &hunter_id) != 1) {
-            fprintf(stderr, "Invalid ID input\n");
+    if (scanf("%d", &hunter_id) != 1) {
+        fprintf(stderr, "Invalid ID input\n");
+        // Clear input buffer
+        int c;
+        while ((c = getchar()) != '\n' && c != EOF);
             continue;
         }
-        
         // Create and initialize the hunter
         struct Hunter* new_hunter = hunter_init(name_buffer, hunter_id, house);
         if (!new_hunter) {
@@ -104,9 +108,20 @@ int main() {
     
     // 6. Wait for all threads to complete
     printf("\n--- Simulation Running ---\n");
-    
     // Wait for ghost thread
-    pthread_join(ghost_thread, NULL);
+pthread_join(ghost_thread, NULL);
+for (int i = 0; i < house->hunter_count; i++) {
+    if (house->hunters[i]) {
+        house->hunters[i]->is_running = false;
+    }
+}
+
+// Wait for all hunter threads
+for (int i = 0; i < house->hunter_count; i++) {
+    if (hunter_threads[i]) {
+        pthread_join(hunter_threads[i], NULL);
+    }
+}
     
     // Wait for all hunter threads
     for (int i = 0; i < house->hunter_count; i++) {

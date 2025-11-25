@@ -74,6 +74,7 @@ struct RoomStack {
     struct RoomNode* head;
 };
 
+
 struct Room {
     char name[MAX_ROOM_NAME];
     struct Room* connections[MAX_CONNECTIONS];
@@ -119,7 +120,9 @@ struct House {
     struct Ghost* ghost;
     struct Room* starting_room;
 };
-
+struct House* house_init();
+void house_cleanup(struct House* house);
+void hunter_collection_append(struct House* house, struct Hunter* hunter);
 // Room functions
 void room_init(struct Room* room, const char* name, bool is_exit);
 void rooms_connect(struct Room* a, struct Room* b);

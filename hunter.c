@@ -72,9 +72,10 @@ struct Hunter* hunter_init(const char* name, int id, struct House* house) {
         hunter->device = EV_EMF;
     }
     
-    // Add hunter to starting room
-    room_add_hunter(house->starting_room, hunter);
-    
+if (!room_add_hunter(house->starting_room, hunter)) {
+    free(hunter);
+    return NULL;
+}
     return hunter;
 }
 
