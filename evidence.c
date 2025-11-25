@@ -50,14 +50,13 @@ void casefile_init(struct CaseFile* case_file) {
         fprintf(stderr, "Failed to initialize case file semaphore\n");
     }
 }
-
 void casefile_add_evidence(struct CaseFile* case_file, enum EvidenceType evidence) {
     if (!case_file) return;
     
     sem_wait(&case_file->mutex);
     case_file->collected |= evidence;
-    if (evidence_has_three_unique(case_file->collected) && 
-        evidence_is_valid_ghost(case_file->collected)) {
+    // Change to: solved when we have 3 unique evidence types (spec R-3)
+    if (evidence_count_unique(case_file->collected) >= 3) {
         case_file->solved = true;
     }
     sem_post(&case_file->mutex);

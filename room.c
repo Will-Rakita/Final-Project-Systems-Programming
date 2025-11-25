@@ -124,14 +124,11 @@ bool room_has_evidence(struct Room* room, enum EvidenceType evidence) {
 bool room_move_entity(struct Room* from, struct Room* to, void* entity) {
     if (!from || !to || !entity) return false;
     
-    struct Room* first = from;
-    struct Room* second = to;
+    // Always lock rooms in consistent order (by memory address)
+    struct Room* first = (from < to) ? from : to;
+    struct Room* second = (from < to) ? to : from;
     
-    if (first > second) {
-        first = to;
-        second = from;
-    }
-    
+    // Lock in consistent order to prevent deadlocks
     sem_wait(&first->sem);
     sem_wait(&second->sem);
     

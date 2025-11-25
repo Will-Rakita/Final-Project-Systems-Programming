@@ -193,13 +193,14 @@ void hunter_move(struct Hunter* hunter) {
     }
     
     if (room_move_entity(hunter->current_room, target_room, hunter)) {
-        log_move(hunter->id, hunter->boredom, hunter->fear, 
-                hunter->current_room->name, target_room->name, hunter->device);
-        
-        if (!hunter->return_to_van) {
-            roomstack_push(&hunter->path, target_room);
-        }
+            log_move(hunter->id, hunter->boredom, hunter->fear, 
+            hunter->current_room->name, target_room->name, hunter->device);
+    
+    // Only push to path AFTER successful move and only when exploring
+    if (!hunter->return_to_van) {
+        roomstack_push(&hunter->path, hunter->current_room); // Push the room we just left
     }
+}
 }
 
 void* hunter_thread(void* arg) {
