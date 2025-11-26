@@ -25,22 +25,22 @@ void house_populate_rooms(struct House* house) {
     room_init(house->rooms+10, "Living Room", false);
     room_init(house->rooms+11, "Garage", false);
     room_init(house->rooms+12, "Utility Room", false);
-
-    room_connect(house->rooms+0, house->rooms+1);    // Van - Hallway
-    room_connect(house->rooms+1, house->rooms+2);    // Hallway - Master Bedroom
-    room_connect(house->rooms+1, house->rooms+3);    // Hallway - Boy's Bedroom
-    room_connect(house->rooms+1, house->rooms+4);    // Hallway - Bathroom
-    room_connect(house->rooms+1, house->rooms+9);    // Hallway - Kitchen
-    room_connect(house->rooms+1, house->rooms+5);    // Hallway - Basement
-    room_connect(house->rooms+5, house->rooms+6);    // Basement - Basement Hallway
-    room_connect(house->rooms+6, house->rooms+7);    // Basement Hallway - Right Storage Room
-    room_connect(house->rooms+6, house->rooms+8);    // Basement Hallway - Left Storage Room
-    room_connect(house->rooms+9, house->rooms+10);   // Kitchen - Living Room
-    room_connect(house->rooms+9, house->rooms+11);   // Kitchen - Garage
-    room_connect(house->rooms+11, house->rooms+12);  // Garage - Utility Room
+    rooms_connect(house->rooms+0, house->rooms+1);    // Van - Hallway
+    rooms_connect(house->rooms+1, house->rooms+2);    // Hallway - Master Bedroom
+    rooms_connect(house->rooms+1, house->rooms+3);    // Hallway - Boy's Bedroom
+    rooms_connect(house->rooms+1, house->rooms+4);    // Hallway - Bathroom
+    rooms_connect(house->rooms+1, house->rooms+9);    // Hallway - Kitchen
+    rooms_connect(house->rooms+1, house->rooms+5);    // Hallway - Basement
+    rooms_connect(house->rooms+5, house->rooms+6);    // Basement - Basement Hallway
+    rooms_connect(house->rooms+6, house->rooms+7);    // Basement Hallway - Right Storage Room
+    rooms_connect(house->rooms+6, house->rooms+8);    // Basement Hallway - Left Storage Room
+    rooms_connect(house->rooms+9, house->rooms+10);   // Kitchen - Living Room
+    rooms_connect(house->rooms+9, house->rooms+11);   // Kitchen - Garage
+    rooms_connect(house->rooms+11, house->rooms+12);  // Garage - Utility Room
 
     house->starting_room = house->rooms; // Van is at index 0
 }
+
 
 // ---- to_string functions ----
 const char* evidence_to_string(enum EvidenceType evidence) {
