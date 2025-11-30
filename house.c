@@ -11,7 +11,7 @@ struct House* house_init() {
     // Initialize case file
     casefile_init(&house->case_file);
 
-    // Initialize hunter collection
+    // Initialize hunter collection, a collection of hunter structs
     house->hunter_capacity = 4;
     house->hunters = malloc(sizeof(struct Hunter*) * house->hunter_capacity);
     if (!house->hunters) {
@@ -45,7 +45,7 @@ void house_cleanup(struct House* house) {
     // Cleanup case file
     casefile_cleanup(&house->case_file);
 
-    // Cleanup rooms
+    // Cleanup rooms, at the index of the room until max count
     for (int i = 0; i < house->room_count; i++) {
         room_cleanup(&house->rooms[i]);
     }
@@ -55,7 +55,7 @@ void house_cleanup(struct House* house) {
 
 void hunter_collection_append(struct House* house, struct Hunter* hunter) {
     if (!house || !hunter) return;
-    // Grow array if needed
+    // Grow array if needed, honestly pretty cool since it just doubles the capacity. Bad if it grows to the size of the ssd
     if (house->hunter_count >= house->hunter_capacity) {
         int new_capacity = house->hunter_capacity * 2;
         struct Hunter** new_hunters = realloc(house->hunters, 
@@ -65,4 +65,5 @@ void hunter_collection_append(struct House* house, struct Hunter* hunter) {
         house->hunter_capacity = new_capacity;
     }
     house->hunters[house->hunter_count++] = hunter;
+
 }
